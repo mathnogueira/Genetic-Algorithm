@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Algoritmo Genético</title>
+    <script src="js/alg_genetico.js"></script>
+    <script src="js/implementacao.js"></script>
+    <script src="js/graph.js"></script>
+    <script type="text/javascript">
+        var ga = undefined;
+        var graph = undefined;
+        function start() {
+            // Configura o desenho do gráfico na tela.
+            var config = {
+                canvasId        : 'canvas',
+                widthCanvas     : 1300,
+                heightCanvas    : 600,
+                minX            : -11,
+                maxX            : 11,
+                minY            : -200,
+                maxY            : 30,
+                unitsPerTickX   : 1,
+                unitsPerTickY   : 20,
+            };
+
+            // Cria uma instancia do algoritmo genético para calcular
+            // a função especificada no exercício.
+            ga = new AlgoritmoGenetico();
+            // Cria um novo objeto para desenhar o gráfico.
+            graph = new Graph(config);
+            // Função que será executada logo após a mudança de geração.
+            // Esta é responsável por desenhar o gráfico da geração atual na
+            // tela do usuário.
+            ga.start(function(geracao, set) {
+                drawGraph(geracao, set);
+            });
+        }
+
+        function drawGraph(geracao, set) {
+            // Calcula qual é o valor que mais aparece na população
+            var freqTMP = {};
+            var moda;
+            var freq = 0;
+            for (var i = 0; i < set.length; ++i) {
+                if (freqTMP[set[i].value.toString()] === undefined)
+                    freqTMP[set[i].value.toString()] = 1;
+                else
+                    freqTMP[set[i].value.toString()]++;
+                if (freqTMP[set[i].value.toString()] > freq) {
+                    freq = freqTMP[set[i].value.toString()];
+                    moda = set[i].value;
+                }
+            }
+            graph.clean();
+            graph.draw();
+            graph.drawInfo(geracao, moda, freq);
+            graph.drawEquation(ga.calculateFitness, '#0fff00', 3);
+            for (var i = 0; i < set.length; ++i) {
+                graph.drawHighlight(ga.calculateFitness, '#000', set[i].value);
+            }
+            if (geracao <= ga.generations)
+                setTimeout(function() {
+                    ga.nextGeneration(drawGraph);
+                }, 100);
+        }
+
+        function sleep(milliseconds) {
+            var start = new Date().getTime();
+            while (new Date().getTime() - start < milliseconds) {}
+        }
+    </script>
+</head>
+<body onload="start()">
+    <canvas id="canvas" style="width: 1300px; height: 600px">
+    </canvas>
+</body>
+</html>
